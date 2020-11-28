@@ -12,6 +12,7 @@
 .idea/**/usage.statistics.xml
 .idea/**/dictionaries
 .idea/**/shelf
+instantclient_19_9/
 
 # Generated files
 .idea/**/contentModel.xml
