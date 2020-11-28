@@ -26,7 +26,7 @@ class Py2SQL:
             print("Connection failed")
 
     def db_disconnect(self):
-        if self.__connection.is not None:
+        if self.__connection is not None:
             self.__connection.close()
             print("Disconnected")
         else:
@@ -53,3 +53,21 @@ class Py2SQL:
                 table_names.append(row[0])
             cursor.close()
         print("Not connected")
+
+    def db_size(self):
+        if self.__connection is not None:
+            cursor = self.__connection.cursor()
+            cursor.execute("SELECT sum(bytes)/1024/1024 size_in_mb FROM dba_data_files")
+            for row in cursor:
+                return row[0]
+        else:
+            print("Not connected")
+
+    def db_table_size(self, table):
+        if self.__connection is not None:
+            cursor = self.__connection.cursor()
+            cursor.execute("select round(bytes/1024/1024,2) from dba_segments where segment_name={} and owner=system".format(table))
+            for row in cursor:
+                return row[0]
+        else:
+            print("Not connected")
