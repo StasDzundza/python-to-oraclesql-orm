@@ -12,4 +12,5 @@ if __name__ == '__main__':
     print("DB size in MB: {}".format(orm.db_size()))
     print("DB tables: {}".format(orm.db_tables()))
     print(orm.db_table_size("customers"))
+    print(orm.db_table_structure("customers"))
     orm.db_disconnect()

@@ -67,9 +67,47 @@ class Py2SQL:
 
     def db_table_size(self, table):
         if self.__connection is not None:
-            cursor = self.__connection.cursor()
-            cursor.execute("select round(bytes/1024/1024,2) || ' MB' from dba_segments where segment_name='{}' and segment_type='TABLE'".format(str(table).upper()))
-            for row in cursor:
-                return row[0]
+            if self.__is_existed(table):
+                cursor = self.__connection.cursor()
+                cursor.execute("select round(bytes/1024/1024,2) || ' MB' from dba_segments where segment_name='{}' and segment_type='TABLE'".format(str(table).upper()))
+                for row in cursor:
+                    return row[0]
+            else:
+                print("Not exists")
         else:
             print("Not connected")
+
+    def db_table_structure(self, table):
+        attributes = []
+        if self.__connection is not None:
+            if self.__is_existed(table):
+                cursor = self.__connection.cursor()
+                cursor.execute('''   select column_id, column_name, data_type
+                                       from user_tab_columns
+                                      where table_name = '{}'
+                                   order by column_id'''.format(str(table).upper()))
+                for row in cursor:
+                    attributes.append((row[0], row[1], row[2]))
+            else:
+                print("Not exists")
+        else:
+            print("Not connected")
+        return attributes
+
+    def __is_existed(self, table):
+        if self.__connection is not None:
+            cursor = self.__connection.cursor()
+            cursor.execute("select count(table_name) from user_tables where table_name = '{}'".format(str(table).upper()))
+            for row in cursor:
+                if int(row[0]) == 0:
+                    return False
+                else:
+                    return True
+        else:
+            print("Not connected")
+            return False
+
+
+
+
+
