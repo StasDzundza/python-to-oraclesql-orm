@@ -50,9 +50,12 @@ class Py2SQL:
             cursor.execute("SELECT table_name FROM dba_tables")
             table_names = []
             for row in cursor:
-                table_names.append(row[0])
+                if not str(row[0]).find("$"):
+                    table_names.append(row[0])
             cursor.close()
-        print("Not connected")
+            return table_names
+        else:
+            print("Not connected")
 
     def db_size(self):
         if self.__connection is not None:
