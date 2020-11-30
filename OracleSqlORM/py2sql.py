@@ -47,11 +47,10 @@ class Py2SQL:
     def db_tables(self):
         if self.__connection is not None:
             cursor = self.__connection.cursor()
-            cursor.execute("SELECT table_name FROM dba_tables")
+            cursor.execute("SELECT table_name FROM user_tables")
             table_names = []
             for row in cursor:
-                if not str(row[0]).find("$"):
-                    table_names.append(row[0])
+                table_names.append(row[0])
             cursor.close()
             return table_names
         else:
@@ -69,7 +68,7 @@ class Py2SQL:
     def db_table_size(self, table):
         if self.__connection is not None:
             cursor = self.__connection.cursor()
-            cursor.execute("select round(bytes/1024/1024,2) from dba_segments where segment_name={} and owner=system".format(table))
+            cursor.execute("select round(bytes/1024/1024,2) || ' MB' from dba_segments where segment_name='{}' and segment_type='TABLE'".format(str(table).upper()))
             for row in cursor:
                 return row[0]
         else:
