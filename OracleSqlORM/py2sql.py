@@ -4,12 +4,12 @@ import cx_Oracle
 class Temp:
     user_name = str
     password = int
-    l = dict()
-    s = set()
+    test = dict()
 
-    def __init__(self, user_name, password):
+    def __init__(self, user_name, password, test):
         self.user_name = user_name
         self.password = password
+        self.test = test
 
 
 class DbCredentials:
@@ -150,6 +150,24 @@ class Py2SQL:
         else:
             print("Not connected")
 
+    def save_object(self, object_to_save):
+        if self.__connection is not None:
+            if not self.__is_existed(object_to_save.__class__.__name__):
+                self.save_class(object_to_save.__class__)
+            cursor = self.__connection.cursor()
+            id_var = cursor.var(cx_Oracle.NUMBER)
+            statements = self.__generate_insert_stmt(object_to_save)
+            insert_params = {}
+            for i in range(len(statements)):
+                if i == 0:
+                    cursor.execute(statements[i], id=id_var)
+                    insert_params['id'] = int(id_var.getvalue()[0])
+                else:
+                    cursor.execute(statements[i].format(**insert_params))
+            self.__connection.commit()
+        else:
+            print("Not connected")
+
     def __generate_create_table_stmt(self, model):
         statements = []
         model_attrs, collection_attrs = self.__get_attrs_with_types(model)
@@ -192,6 +210,57 @@ class Py2SQL:
             params['attr_name'] = k
             params['type'] = v
             statements.append('DROP TABLE {table_name}_{attr_name}_{type}'.format(**params))
+
+        return statements
+
+    def __generate_insert_stmt(self, object_to_save):
+        model = object_to_save.__class__
+        statements = []
+        model_attrs, collection_attrs = self.__get_attrs_with_types(model)
+
+        column_defs = []
+        column_values = []
+        for k, v in model_attrs.items():
+            column_defs.append(k)
+            if v == str:
+                column_values.append("'" + getattr(object_to_save, k) + "'")
+            else:
+                column_values.append(str(getattr(object_to_save, k)))
+
+        sql = 'INSERT INTO {table_name} ' \
+              '({columns_defs}) ' \
+              'VALUES ' \
+              '({columns_values})' \
+              ' returning Id into :id'
+
+        params = {'table_name': str(model.__name__), 'columns_defs': str(', '.join(column_defs)),
+                  'columns_values': str(', '.join(column_values))}
+
+        statements.append(sql.format(**params))
+
+        for k, v in collection_attrs.items():
+            params['id'] = '{id}'
+            params['attr_name'] = k
+            params['type'] = v
+            attr = getattr(object_to_save, k)
+            if v != 'DICT':
+                for item in attr:
+                    params['column_values'] = (str(item) if item.__class__.__name__ != 'str' else "'" + str(
+                        item) + "'") + ", '" + item.__class__.__name__ + "'"
+                    statements.append('INSERT INTO {table_name}_{attr_name}_{type} '
+                                      '(OBJECT_ID, VALUE, VALUE_TYPE) '
+                                      'VALUES '
+                                      '({id}, {column_values})'.format(**params))
+            else:
+                for attr_k, attr_v in attr.items():
+                    params['column_values'] = (str(attr_k) if attr_k.__class__.__name__ != 'str' else "'" + str(
+                        attr_k) + "'") + ", '" + attr_k.__class__.__name__ + "', " + (
+                                                  str(attr_v) if attr_v.__class__.__name__ != 'str' else "'" + str(
+                                                      attr_v) + "'") + ", '" + attr_v.__class__.__name__ + "'"
+                    statements.append('INSERT INTO {table_name}_{attr_name}_{type} '
+                                      '(OBJECT_ID, KEY, KEY_TYPE, VALUE, VALUE_TYPE) '
+                                      'VALUES '
+                                      '({id}, {column_values})'.format(**params))
 
         return statements
 
