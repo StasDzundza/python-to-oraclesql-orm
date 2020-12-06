@@ -1,6 +1,17 @@
 import cx_Oracle
 
 
+class Temp:
+    user_name = str
+    password = int
+    l = dict()
+    s = set()
+
+    def __init__(self, user_name, password):
+        self.user_name = user_name
+        self.password = password
+
+
 class DbCredentials:
     def __init__(self, user_name, password, host):
         self.user_name = user_name
@@ -107,7 +118,57 @@ class Py2SQL:
             print("Not connected")
             return False
 
+    def save_class(self, class_to_save):
+        if self.__connection is not None:
+            if not self.__is_existed(class_to_save.__name__):
+                cursor = self.__connection.cursor()
+                for statement in self.generate_create_table_stmt(class_to_save):
+                    cursor.execute(statement)
+                self.__connection.commit()
+        else:
+            print("Not connected")
 
+    def generate_create_table_stmt(self, model):
+        primitive_data_types = {str: 'VARCHAR2(4000)', int: 'NUMBER', float: 'FLOAT'}
+        collections_data_types = {'[]': 'LIST', '()': 'TUPLE', 'frozenset': 'FROZENSET',
+                                  'set': 'SET', '{}': 'DICT'}
+        statements = []
+        model_attrs = self.attrs(model).items()
+        model_attrs = {k: v for k, v in model_attrs}
+        collection_attrs = {}
+        for k, v in model_attrs.items():
+            type_name = str(v)[:len(str(v))-2] if len(str(v)) != 2 else str(v)
+            if type_name in collections_data_types:
+                collection_attrs[k] = collections_data_types[type_name]
+        for k, v in collection_attrs.items():
+            del model_attrs[k]
+        columns = ', '.join(['%s %s' % (k, primitive_data_types[v]) for k, v in model_attrs.items()])
 
+        sql = 'CREATE TABLE {table_name} ( ' \
+              'id INTEGER GENERATED ALWAYS AS IDENTITY (START WITH 1 INCREMENT BY 1) NOT NULL, ' \
+              '{columns})'
+        params = {'table_name': str(model.__name__), 'columns': str(columns)}
+        statements.append(sql.format(**params))
+
+        for k, v in collection_attrs.items():
+            params['attr_name'] = k
+            params['type'] = v
+            if v != 'DICT':
+                statements.append('CREATE TABLE {table_name}_{attr_name}_{type} ( '
+                                  'object_id INTEGER NOT NULL, '
+                                  'value VARCHAR2(4000), '
+                                  'value_type VARCHAR2(200))'.format(**params))
+            else:
+                statements.append('CREATE TABLE {table_name}_{attr_name}_{type} ( '
+                                  'object_id INTEGER NOT NULL, '
+                                  'key VARCHAR2(4000), '
+                                  'key_type VARCHAR2(200), '
+                                  'value VARCHAR2(4000), '
+                                  'value_type VARCHAR2(200))'.format(**params))
+
+        return statements
+
+    def attrs(self, obj):
+        return dict(i for i in vars(obj).items() if i[0][0] != '_')
 
 
