@@ -19,6 +19,10 @@ class DbCredentials:
         self.host = host
 
 
+def attrs(obj):
+    return dict(i for i in vars(obj).items() if i[0][0] != '_')
+
+
 class Py2SQL:
     def __init__(self):
         cx_Oracle.init_oracle_client(lib_dir="instantclient_19_9")
@@ -80,7 +84,9 @@ class Py2SQL:
         if self.__connection is not None:
             if self.__is_existed(table):
                 cursor = self.__connection.cursor()
-                cursor.execute("select round(bytes/1024/1024,2) || ' MB' from dba_segments where segment_name='{}' and segment_type='TABLE'".format(str(table).upper()))
+                cursor.execute("select round(bytes/1024/1024,2) || ' MB' "
+                               "from dba_segments "
+                               "where segment_name='{}' and segment_type='TABLE'".format(str(table).upper()))
                 for row in cursor:
                     return row[0]
             else:
@@ -108,7 +114,9 @@ class Py2SQL:
     def __is_existed(self, table):
         if self.__connection is not None:
             cursor = self.__connection.cursor()
-            cursor.execute("select count(table_name) from user_tables where table_name = '{}'".format(str(table).upper()))
+            cursor.execute("select count(table_name) "
+                           "from user_tables "
+                           "where table_name = '{}'".format(str(table).upper()))
             for row in cursor:
                 if int(row[0]) == 0:
                     return False
@@ -118,31 +126,35 @@ class Py2SQL:
             print("Not connected")
             return False
 
+    primitive_data_types = {str: 'VARCHAR2(4000)', int: 'NUMBER', float: 'FLOAT'}
+    collections_data_types = {'[]': 'LIST', '()': 'TUPLE', 'frozenset': 'FROZENSET',
+                              'set': 'SET', '{}': 'DICT'}
+
     def save_class(self, class_to_save):
         if self.__connection is not None:
             if not self.__is_existed(class_to_save.__name__):
                 cursor = self.__connection.cursor()
-                for statement in self.generate_create_table_stmt(class_to_save):
+                for statement in self.__generate_create_table_stmt(class_to_save):
                     cursor.execute(statement)
                 self.__connection.commit()
         else:
             print("Not connected")
 
-    def generate_create_table_stmt(self, model):
-        primitive_data_types = {str: 'VARCHAR2(4000)', int: 'NUMBER', float: 'FLOAT'}
-        collections_data_types = {'[]': 'LIST', '()': 'TUPLE', 'frozenset': 'FROZENSET',
-                                  'set': 'SET', '{}': 'DICT'}
+    def delete_class(self, class_to_delete):
+        if self.__connection is not None:
+            if self.__is_existed(class_to_delete.__name__):
+                cursor = self.__connection.cursor()
+                for statement in self.__generate_drop_table_stmt(class_to_delete):
+                    cursor.execute(statement)
+                self.__connection.commit()
+        else:
+            print("Not connected")
+
+    def __generate_create_table_stmt(self, model):
         statements = []
-        model_attrs = self.attrs(model).items()
-        model_attrs = {k: v for k, v in model_attrs}
-        collection_attrs = {}
-        for k, v in model_attrs.items():
-            type_name = str(v)[:len(str(v))-2] if len(str(v)) != 2 else str(v)
-            if type_name in collections_data_types:
-                collection_attrs[k] = collections_data_types[type_name]
-        for k, v in collection_attrs.items():
-            del model_attrs[k]
-        columns = ', '.join(['%s %s' % (k, primitive_data_types[v]) for k, v in model_attrs.items()])
+        model_attrs, collection_attrs = self.__get_attrs_with_types(model)
+
+        columns = ', '.join(['%s %s' % (k, self.primitive_data_types[v]) for k, v in model_attrs.items()])
 
         sql = 'CREATE TABLE {table_name} ( ' \
               'id INTEGER GENERATED ALWAYS AS IDENTITY (START WITH 1 INCREMENT BY 1) NOT NULL, ' \
@@ -168,7 +180,29 @@ class Py2SQL:
 
         return statements
 
-    def attrs(self, obj):
-        return dict(i for i in vars(obj).items() if i[0][0] != '_')
+    def __generate_drop_table_stmt(self, model):
+        statements = []
+        model_attrs, collection_attrs = self.__get_attrs_with_types(model)
 
+        sql = 'DROP TABLE {table_name}'
+        params = {'table_name': str(model.__name__)}
+        statements.append(sql.format(**params))
 
+        for k, v in collection_attrs.items():
+            params['attr_name'] = k
+            params['type'] = v
+            statements.append('DROP TABLE {table_name}_{attr_name}_{type}'.format(**params))
+
+        return statements
+
+    def __get_attrs_with_types(self, model):
+        model_attrs = attrs(model).items()
+        model_attrs = {k: v for k, v in model_attrs}
+        collection_attrs = {}
+        for k, v in model_attrs.items():
+            type_name = str(v)[:len(str(v)) - 2] if len(str(v)) != 2 else str(v)
+            if type_name in self.collections_data_types:
+                collection_attrs[k] = self.collections_data_types[type_name]
+        for k, v in collection_attrs.items():
+            del model_attrs[k]
+        return model_attrs, collection_attrs
