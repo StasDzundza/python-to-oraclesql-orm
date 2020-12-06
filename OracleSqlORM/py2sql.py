@@ -1,10 +1,19 @@
 import cx_Oracle
 
 
+class InTemp:
+    a = str
+    b = int
+
+    def __init__(self, a, b):
+        self.a = a
+        self.b = b
+
+
 class Temp:
     user_name = str
     password = int
-    test = dict()
+    test = InTemp
 
     def __init__(self, user_name, password, test):
         self.user_name = user_name
@@ -126,8 +135,8 @@ class Py2SQL:
             print("Not connected")
             return False
 
-    primitive_data_types = {str: 'VARCHAR2(4000)', int: 'NUMBER', float: 'FLOAT'}
-    collections_data_types = {'[]': 'LIST', '()': 'TUPLE', 'frozenset': 'FROZENSET',
+    __primitive_data_types = {str: 'VARCHAR2(4000)', int: 'NUMBER', float: 'FLOAT'}
+    __collections_data_types = {'[]': 'LIST', '()': 'TUPLE', 'frozenset': 'FROZENSET',
                               'set': 'SET', '{}': 'DICT'}
 
     def save_class(self, class_to_save):
@@ -165,14 +174,17 @@ class Py2SQL:
                 else:
                     cursor.execute(statements[i].format(**insert_params))
             self.__connection.commit()
+            setattr(object_to_save, "db_id", insert_params['id'])
+            return insert_params['id']
         else:
             print("Not connected")
+            return 0
 
     def __generate_create_table_stmt(self, model):
         statements = []
-        model_attrs, collection_attrs = self.__get_attrs_with_types(model)
+        model_attrs, collection_attrs, _ = self.__get_attrs_with_types(model)
 
-        columns = ', '.join(['%s %s' % (k, self.primitive_data_types[v]) for k, v in model_attrs.items()])
+        columns = ', '.join(['%s %s' % (k, self.__primitive_data_types[v]) for k, v in model_attrs.items()])
 
         sql = 'CREATE TABLE {table_name} ( ' \
               'id INTEGER GENERATED ALWAYS AS IDENTITY (START WITH 1 INCREMENT BY 1) NOT NULL, ' \
@@ -200,7 +212,7 @@ class Py2SQL:
 
     def __generate_drop_table_stmt(self, model):
         statements = []
-        model_attrs, collection_attrs = self.__get_attrs_with_types(model)
+        model_attrs, collection_attrs, _ = self.__get_attrs_with_types(model)
 
         sql = 'DROP TABLE {table_name}'
         params = {'table_name': str(model.__name__)}
@@ -216,7 +228,7 @@ class Py2SQL:
     def __generate_insert_stmt(self, object_to_save):
         model = object_to_save.__class__
         statements = []
-        model_attrs, collection_attrs = self.__get_attrs_with_types(model)
+        model_attrs, collection_attrs, object_attrs = self.__get_attrs_with_types(model)
 
         column_defs = []
         column_values = []
@@ -225,7 +237,10 @@ class Py2SQL:
             if v == str:
                 column_values.append("'" + getattr(object_to_save, k) + "'")
             else:
-                column_values.append(str(getattr(object_to_save, k)))
+                if k.endswith("_id") and k.find("_class_") != -1 and k[:k.find("_class_")] in object_attrs.keys():
+                    column_values.append(str(self.save_object(getattr(object_to_save, k[:k.find("_class_")]))))
+                else:
+                    column_values.append(str(getattr(object_to_save, k)))
 
         sql = 'INSERT INTO {table_name} ' \
               '({columns_defs}) ' \
@@ -268,10 +283,18 @@ class Py2SQL:
         model_attrs = attrs(model).items()
         model_attrs = {k: v for k, v in model_attrs}
         collection_attrs = {}
+        object_attrs = {}
         for k, v in model_attrs.items():
-            type_name = str(v)[:len(str(v)) - 2] if len(str(v)) != 2 else str(v)
-            if type_name in self.collections_data_types:
-                collection_attrs[k] = self.collections_data_types[type_name]
+            type_name = str(v).replace('(', '').replace(')', '') if len(str(v)) != 2 else str(v)
+            if type_name in self.__collections_data_types:
+                collection_attrs[k] = self.__collections_data_types[type_name]
+            if type_name not in self.__collections_data_types and v not in self.__primitive_data_types:
+                object_attrs[k] = v
         for k, v in collection_attrs.items():
             del model_attrs[k]
-        return model_attrs, collection_attrs
+        for k, v in object_attrs.items():
+            del model_attrs[k]
+            model_attrs[k + "_class_" + v.__name__ + "_id"] = int
+            self.save_class(v)
+
+        return model_attrs, collection_attrs, object_attrs
