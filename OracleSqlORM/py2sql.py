@@ -1,4 +1,5 @@
 import cx_Oracle
+from inspect import *
 
 
 class InTemp:
@@ -19,6 +20,29 @@ class Temp:
         self.user_name = user_name
         self.password = password
         self.test = test
+
+
+class A:
+    def __init__(self):
+        print('A')
+
+
+class B(A):
+    def __init__(self):
+        super().__init__(self)
+        print('B')
+
+
+class B2(A):
+    def __init__(self):
+        super().__init__(self)
+        print('B2')
+
+
+class C(B):
+    def __init__(self):
+        super().__init__(self)
+        print('C')
 
 
 class DbCredentials:
@@ -188,6 +212,26 @@ class Py2SQL:
                 for statement in self.__generate_delete_stmt(object_to_delete):
                     cursor.execute(statement)
                 self.__connection.commit()
+        else:
+            print("Not connected")
+
+    def save_hierarchy(self, some_class):
+        assert (isclass(some_class))
+        if self.__connection is not None:
+            pass
+        else:
+            print("Not connected")
+
+    def delete_hierarchy(self, some_class):
+        assert (isclass(some_class))
+        if self.__connection is not None:
+            parent_classes = getmro(some_class)
+            cursor = self.__connection.cursor()
+            for parent_class in parent_classes:
+                if parent_class != object and self.__is_existed(parent_class.__name__):
+                    for statement in self.__generate_drop_table_stmt(parent_class):
+                        cursor.execute(statement)
+            self.__connection.commit()
         else:
             print("Not connected")
 
