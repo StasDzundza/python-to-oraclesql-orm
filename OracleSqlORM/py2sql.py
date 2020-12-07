@@ -218,22 +218,35 @@ class Py2SQL:
     def save_hierarchy(self, some_class):
         assert (isclass(some_class))
         if self.__connection is not None:
-            pass
+            print(self.__get_subclasses(some_class))
         else:
             print("Not connected")
 
-    def delete_hierarchy(self, some_class):
-        assert (isclass(some_class))
+    def delete_hierarchy(self, root_class):
+        assert (isclass(root_class))
         if self.__connection is not None:
-            parent_classes = getmro(some_class)
+            children = self.__get_unique_subclasses(root_class)
             cursor = self.__connection.cursor()
-            for parent_class in parent_classes:
-                if parent_class != object and self.__is_existed(parent_class.__name__):
-                    for statement in self.__generate_drop_table_stmt(parent_class):
+            for child in children:
+                if child and self.__is_existed(child.__name__):
+                    for statement in self.__generate_drop_table_stmt(child):
                         cursor.execute(statement)
             self.__connection.commit()
         else:
             print("Not connected")
+
+    @staticmethod
+    def __get_unique_subclasses(some_class):
+        subclasses = list()
+        subclasses.append(some_class)
+        class_stack = [some_class]
+        while class_stack:
+            parent = class_stack.pop()
+            for child in parent.__subclasses__():
+                if child not in subclasses:
+                    subclasses.append(child)
+                    class_stack.append(child)
+        return subclasses
 
     def __generate_create_table_stmt(self, model):
         statements = []
