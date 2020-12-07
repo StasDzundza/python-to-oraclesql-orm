@@ -13,7 +13,7 @@ class InTemp:
 class Temp:
     user_name = str
     password = int
-    test = InTemp
+    test = list()
 
     def __init__(self, user_name, password, test):
         self.user_name = user_name
@@ -137,7 +137,7 @@ class Py2SQL:
 
     __primitive_data_types = {str: 'VARCHAR2(4000)', int: 'NUMBER', float: 'FLOAT'}
     __collections_data_types = {'[]': 'LIST', '()': 'TUPLE', 'frozenset': 'FROZENSET',
-                              'set': 'SET', '{}': 'DICT'}
+                                'set': 'SET', '{}': 'DICT'}
 
     def save_class(self, class_to_save):
         if self.__connection is not None:
@@ -179,6 +179,17 @@ class Py2SQL:
         else:
             print("Not connected")
             return 0
+
+    def delete_object(self, object_to_delete):
+        if self.__connection is not None:
+            if self.__is_existed(object_to_delete.__class__.__name__) and getattr(object_to_delete, 'db_id',
+                                                                                  None) is not None:
+                cursor = self.__connection.cursor()
+                for statement in self.__generate_delete_stmt(object_to_delete):
+                    cursor.execute(statement)
+                self.__connection.commit()
+        else:
+            print("Not connected")
 
     def __generate_create_table_stmt(self, model):
         statements = []
@@ -276,6 +287,24 @@ class Py2SQL:
                                       '(OBJECT_ID, KEY, KEY_TYPE, VALUE, VALUE_TYPE) '
                                       'VALUES '
                                       '({id}, {column_values})'.format(**params))
+
+        return statements
+
+    def __generate_delete_stmt(self, object_to_save):
+        model = object_to_save.__class__
+        object_id = object_to_save.db_id
+        statements = []
+        model_attrs, collection_attrs, object_attrs = self.__get_attrs_with_types(model)
+
+        sql = 'DELETE FROM {table_name} WHERE ID = {id}'
+        params = {'table_name': str(model.__name__), 'id': object_id}
+
+        statements.append(sql.format(**params))
+
+        for k, v in collection_attrs.items():
+            params['attr_name'] = k
+            params['type'] = v
+            statements.append('DELETE FROM {table_name}_{attr_name}_{type} WHERE OBJECT_ID = {id}'.format(**params))
 
         return statements
 
