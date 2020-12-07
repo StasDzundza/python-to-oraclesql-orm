@@ -23,25 +23,30 @@ class Temp:
 
 
 class A:
-    def __init__(self):
+    a = str
+
+    def __init__(self, a):
+        self.a = a
         print('A')
 
 
 class B(A):
-    def __init__(self):
-        super().__init__(self)
+    b = int
+
+    def __init__(self, a, b):
+        super().__init__(a)
+        self.b = b
         print('B')
 
 
-class B2(A):
-    def __init__(self):
-        super().__init__(self)
-        print('B2')
-
-
 class C(B):
-    def __init__(self):
-        super().__init__(self)
+    c = list()
+    cc = int
+
+    def __init__(self, a, b, c, cc):
+        super().__init__(a, b)
+        self.c = c
+        self.cc = cc
         print('C')
 
 
@@ -215,10 +220,16 @@ class Py2SQL:
         else:
             print("Not connected")
 
-    def save_hierarchy(self, some_class):
-        assert (isclass(some_class))
+    def save_hierarchy(self, root_class):
+        assert (isclass(root_class))
         if self.__connection is not None:
-            print(self.__get_subclasses(some_class))
+            children = self.__get_unique_subclasses(root_class)
+            cursor = self.__connection.cursor()
+            for child in children:
+                if child and self.__is_existed(child.__name__) is False:
+                    for statement in self.__generate_create_table_stmt(child):
+                        cursor.execute(statement)
+            self.__connection.commit()
         else:
             print("Not connected")
 
