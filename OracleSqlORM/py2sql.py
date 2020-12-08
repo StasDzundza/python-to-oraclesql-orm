@@ -1,4 +1,5 @@
 import cx_Oracle
+import os
 from inspect import *
 
 
@@ -63,7 +64,8 @@ def attrs(obj):
 
 class Py2SQL:
     def __init__(self):
-        cx_Oracle.init_oracle_client(lib_dir="instantclient_19_9")
+        oracle_client_dir = os.environ['ORACLE_CLIENT']
+        cx_Oracle.init_oracle_client(lib_dir=oracle_client_dir)
         print("client version: {}".format(cx_Oracle.clientversion()))
         self.__connection = None
         self.__db_name = ''
