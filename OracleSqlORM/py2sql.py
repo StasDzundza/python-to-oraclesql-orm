@@ -8,63 +8,11 @@ import os
 from inspect import *
 
 
-class InTemp:
-    a = str
-    b = int
-
-    def __init__(self, a, b):
-        self.a = a
-        self.b = b
-
-
-class Temp:
-    user_name = str
-    password = int
-    test = list()
-
-    def __init__(self, user_name, password, test):
-        self.user_name = user_name
-        self.password = password
-        self.test = test
-
-
-class A:
-    a = str
-
-    def __init__(self, a):
-        self.a = a
-        print('A')
-
-
-class B(A):
-    b = int
-
-    def __init__(self, a, b):
-        super().__init__(a)
-        self.b = b
-        print('B')
-
-
-class C(B):
-    c = list()
-    cc = int
-
-    def __init__(self, a, b, c, cc):
-        super().__init__(a, b)
-        self.c = c
-        self.cc = cc
-        print('C')
-
-
 class DbCredentials:
     def __init__(self, user_name, password, host):
         self.user_name = user_name
         self.password = password
         self.host = host
-
-
-def attrs(obj):
-    return dict(i for i in vars(obj).items() if i[0][0] != '_')
 
 
 class Py2SQL:
@@ -141,7 +89,7 @@ class Py2SQL:
         if self.__connection is not None:
             if self.__is_existed(table):
                 cursor = self.__connection.cursor()
-                cursor.execute("select round(bytes/1024/1024,2) || ' MB' "
+                cursor.execute("select round(bytes/1024/1024,3) || ' MB' "
                                "from dba_segments "
                                "where segment_name='{}' and segment_type='TABLE'".format(str(table).upper()))
                 for row in cursor:
@@ -152,6 +100,7 @@ class Py2SQL:
             print("Not connected")
 
     def db_table_structure(self, table):
+        """ Return ordered table columns and their types """
         attributes = []
         if self.__connection is not None:
             if self.__is_existed(table):
@@ -169,6 +118,7 @@ class Py2SQL:
         return attributes
 
     def __is_existed(self, table):
+        """ Check if table already exists in database """
         if self.__connection is not None:
             cursor = self.__connection.cursor()
             cursor.execute("select count(table_name) "
@@ -188,6 +138,7 @@ class Py2SQL:
                                 'set': 'SET', '{}': 'DICT'}
 
     def save_class(self, class_to_save):
+        """ Save object representation in database """
         if self.__connection is not None:
             if not self.__is_existed(class_to_save.__name__):
                 cursor = self.__connection.cursor()
@@ -198,6 +149,7 @@ class Py2SQL:
             print("Not connected")
 
     def delete_class(self, class_to_delete):
+        """ Delete class representation in database """
         if self.__connection is not None:
             if self.__is_existed(class_to_delete.__name__):
                 cursor = self.__connection.cursor()
@@ -208,6 +160,7 @@ class Py2SQL:
             print("Not connected")
 
     def save_object(self, object_to_save):
+        """ Save object representation in database """
         if self.__connection is not None:
             if not self.__is_existed(object_to_save.__class__.__name__):
                 self.save_class(object_to_save.__class__)
@@ -229,6 +182,7 @@ class Py2SQL:
             return 0
 
     def delete_object(self, object_to_delete):
+        """ Deletes object representation in database"""
         if self.__connection is not None:
             if self.__is_existed(object_to_delete.__class__.__name__) and getattr(object_to_delete, 'db_id',
                                                                                   None) is not None:
@@ -288,6 +242,7 @@ class Py2SQL:
         return subclasses
 
     def __generate_create_table_stmt(self, model):
+        """ Returns create table statements for input class """
         statements = []
         model_attrs, collection_attrs, _ = self.__get_attrs_with_types(model)
 
@@ -318,6 +273,7 @@ class Py2SQL:
         return statements
 
     def __generate_drop_table_stmt(self, model):
+        """ Returns drop table statements for input class """
         statements = []
         model_attrs, collection_attrs, _ = self.__get_attrs_with_types(model)
 
@@ -333,6 +289,7 @@ class Py2SQL:
         return statements
 
     def __generate_insert_stmt(self, object_to_save):
+        """ Returns insert statements for input object """
         model = object_to_save.__class__
         statements = []
         model_attrs, collection_attrs, object_attrs = self.__get_attrs_with_types(model)
@@ -365,28 +322,30 @@ class Py2SQL:
             params['attr_name'] = k
             params['type'] = v
             attr = getattr(object_to_save, k)
-            if v != 'DICT':
-                for item in attr:
-                    params['column_values'] = (str(item) if item.__class__.__name__ != 'str' else "'" + str(
-                        item) + "'") + ", '" + item.__class__.__name__ + "'"
-                    statements.append('INSERT INTO {table_name}_{attr_name}_{type} '
-                                      '(OBJECT_ID, VALUE, VALUE_TYPE) '
-                                      'VALUES '
-                                      '({id}, {column_values})'.format(**params))
-            else:
-                for attr_k, attr_v in attr.items():
-                    params['column_values'] = (str(attr_k) if attr_k.__class__.__name__ != 'str' else "'" + str(
-                        attr_k) + "'") + ", '" + attr_k.__class__.__name__ + "', " + (
-                                                  str(attr_v) if attr_v.__class__.__name__ != 'str' else "'" + str(
-                                                      attr_v) + "'") + ", '" + attr_v.__class__.__name__ + "'"
-                    statements.append('INSERT INTO {table_name}_{attr_name}_{type} '
-                                      '(OBJECT_ID, KEY, KEY_TYPE, VALUE, VALUE_TYPE) '
-                                      'VALUES '
-                                      '({id}, {column_values})'.format(**params))
+            if attr is not None:
+                if v != 'DICT':
+                    for item in attr:
+                        params['column_values'] = (str(item) if item.__class__.__name__ != 'str' else "'" + str(
+                            item) + "'") + ", '" + item.__class__.__name__ + "'"
+                        statements.append('INSERT INTO {table_name}_{attr_name}_{type} '
+                                          '(OBJECT_ID, VALUE, VALUE_TYPE) '
+                                          'VALUES '
+                                          '({id}, {column_values})'.format(**params))
+                else:
+                    for attr_k, attr_v in attr.items():
+                        params['column_values'] = (str(attr_k) if attr_k.__class__.__name__ != 'str' else "'" + str(
+                            attr_k) + "'") + ", '" + attr_k.__class__.__name__ + "', " + (
+                                                      str(attr_v) if attr_v.__class__.__name__ != 'str' else "'" + str(
+                                                          attr_v) + "'") + ", '" + attr_v.__class__.__name__ + "'"
+                        statements.append('INSERT INTO {table_name}_{attr_name}_{type} '
+                                          '(OBJECT_ID, KEY, KEY_TYPE, VALUE, VALUE_TYPE) '
+                                          'VALUES '
+                                          '({id}, {column_values})'.format(**params))
 
         return statements
 
     def __generate_delete_stmt(self, object_to_save):
+        """ Returns delete statements for input object """
         model = object_to_save.__class__
         object_id = object_to_save.db_id
         statements = []
@@ -405,7 +364,8 @@ class Py2SQL:
         return statements
 
     def __get_attrs_with_types(self, model):
-        model_attrs = attrs(model).items()
+        """ Returns class attributes and their types divided into primitive, collection and object attributes """
+        model_attrs = self.attrs(model).items()
         model_attrs = {k: v for k, v in model_attrs}
         collection_attrs = {}
         object_attrs = {}
@@ -423,3 +383,8 @@ class Py2SQL:
             self.save_class(v)
 
         return model_attrs, collection_attrs, object_attrs
+
+    @staticmethod
+    def attrs(model):
+        """ Returns dict of class attributes and their types"""
+        return dict(i for i in vars(model).items() if i[0][0] != '_')
