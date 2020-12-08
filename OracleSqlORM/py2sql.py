@@ -1,3 +1,8 @@
+"""
+Module which realize Python to Oracle SQL ORM with the help of Py2SQL class.
+"""
+
+
 import cx_Oracle
 import os
 from inspect import *
