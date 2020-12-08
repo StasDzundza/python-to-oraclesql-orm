@@ -30,11 +30,12 @@ if __name__ == '__main__':
             print("Table {} structure: ".format(table))
             print(orm.db_table_structure(table))
 
-        t = Test(3, "test", [1, 3.5, "str"])
+        t = Test(3, "test", [1, 3.5, "str"], TestAttr(1.5, {"key": 1, 2.5: "value"}))
         print("TEST table size: " + orm.db_table_size("Test"))
         orm.save_object(t)
         orm.delete_object(t)
         orm.delete_class(Test)
+        orm.delete_class(TestAttr)
         print("DB tables after deleting class: {}".format(orm.db_tables()))
 
     finally:

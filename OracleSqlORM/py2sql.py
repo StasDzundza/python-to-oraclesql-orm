@@ -371,12 +371,18 @@ class Py2SQL:
         model_attrs = {k: v for k, v in model_attrs}
         collection_attrs = {}
         object_attrs = {}
+        methods_to_del = []
         for k, v in model_attrs.items():
             type_name = str(v).replace('(', '').replace(')', '') if len(str(v)) != 2 else str(v)
             if type_name in self.__collections_data_types:
                 collection_attrs[k] = self.__collections_data_types[type_name]
+            if type_name.find("function") != -1 or type_name.find("property") != -1 or type_name.find("method") != -1:
+                methods_to_del.append(k)
+                continue
             if type_name not in self.__collections_data_types and v not in self.__primitive_data_types:
                 object_attrs[k] = v
+        for k in methods_to_del:
+            del model_attrs[k]
         for k, v in collection_attrs.items():
             del model_attrs[k]
         for k, v in object_attrs.items():

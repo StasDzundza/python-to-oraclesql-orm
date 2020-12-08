@@ -40,10 +40,10 @@ class Test:
     int_attr = int
     str_attr = str
     list_attr = list()
-    #object_attr = TestAttr
+    object_attr = TestAttr
 
-    def __init__(self, int_attr, str_attr, list_attr):#, object_str):
+    def __init__(self, int_attr, str_attr, list_attr, object_attr):
         self.int_attr = int_attr
         self.str_attr = str_attr
         self.list_attr = list_attr
-        #self.object_str = object_str
+        self.object_attr = object_attr
