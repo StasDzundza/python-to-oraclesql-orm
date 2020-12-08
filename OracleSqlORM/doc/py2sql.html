@@ -1,0 +1,161 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html><head><title>Python: module py2sql</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+</head><body bgcolor="#f0f0f8">
+
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="heading">
+<tr bgcolor="#7799ee">
+<td valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial">&nbsp;<br><big><big><strong>py2sql</strong></big></big></font></td
+><td align=right valign=bottom
+><font color="#ffffff" face="helvetica, arial"><a href=".">index</a><br><a href="file:e%3A%5Cstudying%5C4course%5Cpython-to-oraclesql-orm%5Coraclesqlorm%5Cpy2sql.py">e:\studying\4course\python-to-oraclesql-orm\oraclesqlorm\py2sql.py</a></font></td></tr></table>
+    <p><tt>Module&nbsp;which&nbsp;realize&nbsp;Python&nbsp;to&nbsp;Oracle&nbsp;SQL&nbsp;ORM&nbsp;with&nbsp;the&nbsp;help&nbsp;of&nbsp;<a href="#Py2SQL">Py2SQL</a>&nbsp;class.</tt></p>
+<p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#aa55cc">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial"><big><strong>Modules</strong></big></font></td></tr>
+    
+<tr><td bgcolor="#aa55cc"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><table width="100%" summary="list"><tr><td width="25%" valign=top><a href="abc.html">abc</a><br>
+<a href="builtins.html">builtins</a><br>
+<a href="collections.html">collections</a><br>
+<a href="cx_Oracle.html">cx_Oracle</a><br>
+<a href="dis.html">dis</a><br>
+</td><td width="25%" valign=top><a href="enum.html">enum</a><br>
+<a href="functools.html">functools</a><br>
+<a href="importlib.html">importlib</a><br>
+<a href="itertools.html">itertools</a><br>
+<a href="linecache.html">linecache</a><br>
+</td><td width="25%" valign=top><a href="os.html">os</a><br>
+<a href="re.html">re</a><br>
+<a href="sys.html">sys</a><br>
+<a href="token.html">token</a><br>
+<a href="tokenize.html">tokenize</a><br>
+</td><td width="25%" valign=top><a href="types.html">types</a><br>
+<a href="warnings.html">warnings</a><br>
+</td></tr></table></td></tr></table><p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#ee77aa">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial"><big><strong>Classes</strong></big></font></td></tr>
+    
+<tr><td bgcolor="#ee77aa"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><dl>
+<dt><font face="helvetica, arial"><a href="builtins.html#object">builtins.object</a>
+</font></dt><dd>
+<dl>
+<dt><font face="helvetica, arial"><a href="py2sql.html#DbCredentials">DbCredentials</a>
+</font></dt><dt><font face="helvetica, arial"><a href="py2sql.html#Py2SQL">Py2SQL</a>
+</font></dt></dl>
+</dd>
+</dl>
+ <p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#ffc8d8">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#000000" face="helvetica, arial"><a name="DbCredentials">class <strong>DbCredentials</strong></a>(<a href="builtins.html#object">builtins.object</a>)</font></td></tr>
+    
+<tr bgcolor="#ffc8d8"><td rowspan=2><tt>&nbsp;&nbsp;&nbsp;</tt></td>
+<td colspan=2><tt><a href="#DbCredentials">DbCredentials</a>(user_name,&nbsp;password,&nbsp;host)<br>
+&nbsp;<br>
+Holds&nbsp;db&nbsp;credentials<br>&nbsp;</tt></td></tr>
+<tr><td>&nbsp;</td>
+<td width="100%">Methods defined here:<br>
+<dl><dt><a name="DbCredentials-__init__"><strong>__init__</strong></a>(self, user_name, password, host)</dt><dd><tt>Initialize&nbsp;self.&nbsp;&nbsp;See&nbsp;help(type(self))&nbsp;for&nbsp;accurate&nbsp;signature.</tt></dd></dl>
+
+<hr>
+Data descriptors defined here:<br>
+<dl><dt><strong>__dict__</strong></dt>
+<dd><tt>dictionary&nbsp;for&nbsp;instance&nbsp;variables&nbsp;(if&nbsp;defined)</tt></dd>
+</dl>
+<dl><dt><strong>__weakref__</strong></dt>
+<dd><tt>list&nbsp;of&nbsp;weak&nbsp;references&nbsp;to&nbsp;the&nbsp;object&nbsp;(if&nbsp;defined)</tt></dd>
+</dl>
+</td></tr></table> <p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#ffc8d8">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#000000" face="helvetica, arial"><a name="Py2SQL">class <strong>Py2SQL</strong></a>(<a href="builtins.html#object">builtins.object</a>)</font></td></tr>
+    
+<tr bgcolor="#ffc8d8"><td rowspan=2><tt>&nbsp;&nbsp;&nbsp;</tt></td>
+<td colspan=2><tt>Realize&nbsp;Python&nbsp;to&nbsp;Oracle&nbsp;SQL&nbsp;ORM<br>&nbsp;</tt></td></tr>
+<tr><td>&nbsp;</td>
+<td width="100%">Methods defined here:<br>
+<dl><dt><a name="Py2SQL-__init__"><strong>__init__</strong></a>(self)</dt><dd><tt>Invokes&nbsp;when&nbsp;<a href="#Py2SQL">Py2SQL</a>&nbsp;<a href="builtins.html#object">object</a>&nbsp;is&nbsp;created<br>
+Initializes&nbsp;OracleSQL&nbsp;client<br>
+Path&nbsp;to&nbsp;OracleSQL&nbsp;client&nbsp;should&nbsp;be&nbsp;set&nbsp;as&nbsp;ORACLE_CLIENT&nbsp;environment&nbsp;variable.</tt></dd></dl>
+
+<dl><dt><a name="Py2SQL-db_connect"><strong>db_connect</strong></a>(self, credentials)</dt><dd><tt>Initializes&nbsp;and&nbsp;saves&nbsp;connection&nbsp;to&nbsp;remote&nbsp;oracle&nbsp;database</tt></dd></dl>
+
+<dl><dt><a name="Py2SQL-db_disconnect"><strong>db_disconnect</strong></a>(self)</dt><dd><tt>Disconnects&nbsp;from&nbsp;remote&nbsp;database&nbsp;if&nbsp;connected</tt></dd></dl>
+
+<dl><dt><a name="Py2SQL-db_engine"><strong>db_engine</strong></a>(self)</dt><dd><tt>Returns&nbsp;name&nbsp;and&nbsp;version&nbsp;of&nbsp;remote&nbsp;Oracle&nbsp;DBMS&nbsp;if&nbsp;connected</tt></dd></dl>
+
+<dl><dt><a name="Py2SQL-db_name"><strong>db_name</strong></a>(self)</dt><dd><tt>Returns&nbsp;name&nbsp;of&nbsp;remote&nbsp;Oracle&nbsp;DBMS&nbsp;if&nbsp;connected</tt></dd></dl>
+
+<dl><dt><a name="Py2SQL-db_size"><strong>db_size</strong></a>(self)</dt><dd><tt>Returns&nbsp;size(in&nbsp;MB)&nbsp;of&nbsp;remote&nbsp;Oracle&nbsp;Database&nbsp;if&nbsp;connected</tt></dd></dl>
+
+<dl><dt><a name="Py2SQL-db_table_size"><strong>db_table_size</strong></a>(self, table)</dt><dd><tt>Returns&nbsp;size&nbsp;of&nbsp;some&nbsp;table(in&nbsp;MB)&nbsp;in&nbsp;Oracle&nbsp;Database&nbsp;if&nbsp;connected</tt></dd></dl>
+
+<dl><dt><a name="Py2SQL-db_table_structure"><strong>db_table_structure</strong></a>(self, table)</dt><dd><tt>Return&nbsp;ordered&nbsp;table&nbsp;columns&nbsp;and&nbsp;their&nbsp;types</tt></dd></dl>
+
+<dl><dt><a name="Py2SQL-db_tables"><strong>db_tables</strong></a>(self)</dt><dd><tt>Returns&nbsp;list&nbsp;of&nbsp;existing&nbsp;tables&nbsp;of&nbsp;remote&nbsp;Oracle&nbsp;Database&nbsp;if&nbsp;connected</tt></dd></dl>
+
+<dl><dt><a name="Py2SQL-delete_class"><strong>delete_class</strong></a>(self, class_to_delete)</dt><dd><tt>Delete&nbsp;class&nbsp;representation&nbsp;in&nbsp;database</tt></dd></dl>
+
+<dl><dt><a name="Py2SQL-delete_hierarchy"><strong>delete_hierarchy</strong></a>(self, root_class)</dt><dd><tt>Remove&nbsp;class&nbsp;hierarchy&nbsp;from&nbsp;remote&nbsp;Oracle&nbsp;Database&nbsp;if&nbsp;connected<br>
+It&nbsp;removes&nbsp;root&nbsp;class&nbsp;table&nbsp;and&nbsp;his&nbsp;children&nbsp;tables</tt></dd></dl>
+
+<dl><dt><a name="Py2SQL-delete_object"><strong>delete_object</strong></a>(self, object_to_delete)</dt><dd><tt>Deletes&nbsp;<a href="builtins.html#object">object</a>&nbsp;representation&nbsp;in&nbsp;database</tt></dd></dl>
+
+<dl><dt><a name="Py2SQL-save_class"><strong>save_class</strong></a>(self, class_to_save)</dt><dd><tt>Save&nbsp;<a href="builtins.html#object">object</a>&nbsp;representation&nbsp;in&nbsp;database</tt></dd></dl>
+
+<dl><dt><a name="Py2SQL-save_hierarchy"><strong>save_hierarchy</strong></a>(self, root_class)</dt><dd><tt>Save&nbsp;class&nbsp;hierarchy&nbsp;in&nbsp;remote&nbsp;Oracle&nbsp;Database&nbsp;if&nbsp;connected<br>
+It&nbsp;creates&nbsp;table&nbsp;for&nbsp;root&nbsp;class&nbsp;and&nbsp;tables&nbsp;form&nbsp;his&nbsp;children&nbsp;in&nbsp;database</tt></dd></dl>
+
+<dl><dt><a name="Py2SQL-save_object"><strong>save_object</strong></a>(self, object_to_save)</dt><dd><tt>Save&nbsp;<a href="builtins.html#object">object</a>&nbsp;representation&nbsp;in&nbsp;database</tt></dd></dl>
+
+<hr>
+Static methods defined here:<br>
+<dl><dt><a name="Py2SQL-attrs"><strong>attrs</strong></a>(model)</dt><dd><tt>Returns&nbsp;dict&nbsp;of&nbsp;class&nbsp;attributes&nbsp;and&nbsp;their&nbsp;types</tt></dd></dl>
+
+<hr>
+Data descriptors defined here:<br>
+<dl><dt><strong>__dict__</strong></dt>
+<dd><tt>dictionary&nbsp;for&nbsp;instance&nbsp;variables&nbsp;(if&nbsp;defined)</tt></dd>
+</dl>
+<dl><dt><strong>__weakref__</strong></dt>
+<dd><tt>list&nbsp;of&nbsp;weak&nbsp;references&nbsp;to&nbsp;the&nbsp;object&nbsp;(if&nbsp;defined)</tt></dd>
+</dl>
+</td></tr></table></td></tr></table><p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#55aa55">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial"><big><strong>Data</strong></big></font></td></tr>
+    
+<tr><td bgcolor="#55aa55"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><strong>CORO_CLOSED</strong> = 'CORO_CLOSED'<br>
+<strong>CORO_CREATED</strong> = 'CORO_CREATED'<br>
+<strong>CORO_RUNNING</strong> = 'CORO_RUNNING'<br>
+<strong>CORO_SUSPENDED</strong> = 'CORO_SUSPENDED'<br>
+<strong>CO_ASYNC_GENERATOR</strong> = 512<br>
+<strong>CO_COROUTINE</strong> = 128<br>
+<strong>CO_GENERATOR</strong> = 32<br>
+<strong>CO_ITERABLE_COROUTINE</strong> = 256<br>
+<strong>CO_NESTED</strong> = 16<br>
+<strong>CO_NEWLOCALS</strong> = 2<br>
+<strong>CO_NOFREE</strong> = 64<br>
+<strong>CO_OPTIMIZED</strong> = 1<br>
+<strong>CO_VARARGS</strong> = 4<br>
+<strong>CO_VARKEYWORDS</strong> = 8<br>
+<strong>GEN_CLOSED</strong> = 'GEN_CLOSED'<br>
+<strong>GEN_CREATED</strong> = 'GEN_CREATED'<br>
+<strong>GEN_RUNNING</strong> = 'GEN_RUNNING'<br>
+<strong>GEN_SUSPENDED</strong> = 'GEN_SUSPENDED'<br>
+<strong>TPFLAGS_IS_ABSTRACT</strong> = 1048576<br>
+<strong>k</strong> = 512<br>
+<strong>mod_dict</strong> = {'ArgInfo': &lt;class 'inspect.ArgInfo'&gt;, 'ArgSpec': &lt;class 'inspect.ArgSpec'&gt;, 'Arguments': &lt;class 'inspect.Arguments'&gt;, 'Attribute': &lt;class 'inspect.Attribute'&gt;, 'BlockFinder': &lt;class 'inspect.BlockFinder'&gt;, 'BoundArguments': &lt;class 'inspect.BoundArguments'&gt;, 'CORO_CLOSED': 'CORO_CLOSED', 'CORO_CREATED': 'CORO_CREATED', 'CORO_RUNNING': 'CORO_RUNNING', 'CORO_SUSPENDED': 'CORO_SUSPENDED', ...}<br>
+<strong>modulesbyfile</strong> = {}<br>
+<strong>v</strong> = 'ASYNC_GENERATOR'</td></tr></table>
+</body></html>

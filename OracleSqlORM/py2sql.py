@@ -9,6 +9,7 @@ from inspect import *
 
 
 class DbCredentials:
+    """Holds db credentials"""
     def __init__(self, user_name, password, host):
         self.user_name = user_name
         self.password = password
@@ -16,6 +17,7 @@ class DbCredentials:
 
 
 class Py2SQL:
+    """Realize Python to Oracle SQL ORM"""
     def __init__(self):
         """
         Invokes when Py2SQL object is created
