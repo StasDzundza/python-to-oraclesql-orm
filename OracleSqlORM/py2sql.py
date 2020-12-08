@@ -1,4 +1,5 @@
 import cx_Oracle
+import os
 from inspect import *
 
 
@@ -11,12 +12,19 @@ class DbCredentials:
 
 class Py2SQL:
     def __init__(self):
-        cx_Oracle.init_oracle_client(lib_dir="instantclient_19_9")
+        """
+        Invokes when Py2SQL object is created
+        Initializes OracleSQL client
+        Path to OracleSQL client should be set as ORACLE_CLIENT environment variable.
+        """
+        oracle_client_dir = os.environ['ORACLE_CLIENT']
+        cx_Oracle.init_oracle_client(lib_dir=oracle_client_dir)
         print("client version: {}".format(cx_Oracle.clientversion()))
         self.__connection = None
         self.__db_name = ''
 
     def db_connect(self, credentials):
+        """Initializes and saves connection to remote oracle database"""
         self.__connection = cx_Oracle.connect(credentials.user_name, credentials.password, credentials.host,
                                               encoding='UTF-8')
         if self.__connection is not None:
@@ -27,6 +35,7 @@ class Py2SQL:
             print("Connection failed")
 
     def db_disconnect(self):
+        """Disconnects from remote database if connected"""
         if self.__connection is not None:
             self.__connection.close()
             print("Disconnected")
@@ -34,18 +43,21 @@ class Py2SQL:
             print("Not connected")
 
     def db_engine(self):
+        """Returns name and version of remote Oracle DBMS if connected"""
         if self.__connection is not None:
             return self.__db_name, self.__connection.version
         else:
             print("Not connected")
 
     def db_name(self):
+        """Returns name of remote Oracle DBMS if connected"""
         if self.__connection is not None:
             return self.__db_name
         else:
             print("Not connected")
 
     def db_tables(self):
+        """Returns list of existing tables of remote Oracle Database if connected"""
         if self.__connection is not None:
             cursor = self.__connection.cursor()
             cursor.execute("SELECT table_name FROM user_tables")
@@ -58,6 +70,7 @@ class Py2SQL:
             print("Not connected")
 
     def db_size(self):
+        """Returns size(in MB) of remote Oracle Database if connected"""
         if self.__connection is not None:
             cursor = self.__connection.cursor()
             cursor.execute("SELECT sum(bytes)/1024/1024 size_in_mb FROM dba_data_files")
@@ -67,6 +80,7 @@ class Py2SQL:
             print("Not connected")
 
     def db_table_size(self, table):
+        """Returns size of some table(in MB) in Oracle Database if connected"""
         if self.__connection is not None:
             if self.__is_existed(table):
                 cursor = self.__connection.cursor()
@@ -175,6 +189,10 @@ class Py2SQL:
             print("Not connected")
 
     def save_hierarchy(self, root_class):
+        """
+        Save class hierarchy in remote Oracle Database if connected
+        It creates table for root class and tables form his children in database
+        """
         assert (isclass(root_class))
         if self.__connection is not None:
             children = self.__get_unique_subclasses(root_class)
@@ -188,6 +206,10 @@ class Py2SQL:
             print("Not connected")
 
     def delete_hierarchy(self, root_class):
+        """
+        Remove class hierarchy from remote Oracle Database if connected
+        It removes root class table and his children tables
+        """
         assert (isclass(root_class))
         if self.__connection is not None:
             children = self.__get_unique_subclasses(root_class)
@@ -201,10 +223,11 @@ class Py2SQL:
             print("Not connected")
 
     @staticmethod
-    def __get_unique_subclasses(some_class):
+    def __get_unique_subclasses(root_class):
+        """Returns list of unique subclasses of some class, including root class"""
         subclasses = list()
-        subclasses.append(some_class)
-        class_stack = [some_class]
+        subclasses.append(root_class)
+        class_stack = [root_class]
         while class_stack:
             parent = class_stack.pop()
             for child in parent.__subclasses__():
