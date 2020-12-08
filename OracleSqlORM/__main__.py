@@ -1,6 +1,6 @@
 # Python to Oracle SQL ORM
+from demo_classes import *
 from py2sql import *
-
 
 if __name__ == '__main__':
     print('Python to Oracle SQL ORM Framework')
@@ -12,17 +12,30 @@ if __name__ == '__main__':
         print("DB engine: {}".format(orm.db_engine()))
         print("DB name: {}".format(orm.db_name()))
         print("DB size in MB: {}".format(orm.db_size()))
+        
+        print("\n\nSave hierarchy demo")
         print("DB tables: {}".format(orm.db_tables()))
-        print(orm.db_table_size("customers"))
-        print(orm.db_table_structure("customers"))
+        orm.save_hierarchy(A)
+        print("DB tables after saving hierarchy: {}".format(orm.db_tables()))
+        for table in orm.db_tables():
+            print("Table {} structure: ".format(table))
+            print(orm.db_table_structure(table))
+        orm.delete_hierarchy(A)
+        print("DB tables after deleting hierarchy: {}".format(orm.db_tables()))
 
-        orm.save_class(Temp)
-        print("DB tables: {}".format(orm.db_tables()))
-        t = Temp("check_del", 0, [1, "check_del"])
+        print("\n\nSave class and object demo")
+        orm.save_class(Test)
+        print("DB tables after saving class: {}".format(orm.db_tables()))
+        for table in orm.db_tables():
+            print("Table {} structure: ".format(table))
+            print(orm.db_table_structure(table))
+
+        t = Test(3, "test", [1, 3.5, "str"])
+        print("TEST table size: " + orm.db_table_size("Test"))
         orm.save_object(t)
         orm.delete_object(t)
-        orm.delete_class(Temp)
-        print("DB tables: {}".format(orm.db_tables()))
+        orm.delete_class(Test)
+        print("DB tables after deleting class: {}".format(orm.db_tables()))
 
     finally:
         orm.db_disconnect()
