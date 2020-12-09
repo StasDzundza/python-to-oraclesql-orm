@@ -16,7 +16,7 @@ Python to Oracle SQL Object Relationship Mapping(ORM)
 Project can be downloaded or installed using PyPI
 To install from PyPI:
 - ensure you have already installed Python 3.7+ and pip on machine
-- open terminal and run command `pip install py_2_oracle_sql_orm`
+- open terminal and run command `pip install py-2-oracle-sql-orm`
 
 ## Database
 We provide database deployed on Azure
