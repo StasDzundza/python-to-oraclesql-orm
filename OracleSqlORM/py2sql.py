@@ -203,12 +203,9 @@ class Py2SQL:
         assert (isclass(root_class))
         if self.__connection is not None:
             children = self.__get_unique_subclasses(root_class)
-            cursor = self.__connection.cursor()
             for child in children:
                 if child and self.__is_existed(child.__name__) is False:
-                    for statement in self.__generate_create_table_stmt(child):
-                        cursor.execute(statement)
-            self.__connection.commit()
+                    self.save_class(child)
         else:
             print("Not connected")
 
