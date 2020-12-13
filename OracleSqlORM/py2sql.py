@@ -247,14 +247,16 @@ class Py2SQL:
         """ Returns create table statements for input class """
         statements = []
         model_attrs, collection_attrs, _ = self.__get_attrs_with_types(model)
+        columns = ['%s %s' % (k, self.__primitive_data_types[v]) for k, v in model_attrs.items()]
+        params = {'table_name': str(model.__name__)}
+        if len(columns) != 0:
+            columns = ', '.join(columns)
 
-        columns = ', '.join(['%s %s' % (k, self.__primitive_data_types[v]) for k, v in model_attrs.items()])
-
-        sql = 'CREATE TABLE {table_name} ( ' \
-              'id INTEGER GENERATED ALWAYS AS IDENTITY (START WITH 1 INCREMENT BY 1) NOT NULL, ' \
-              '{columns})'
-        params = {'table_name': str(model.__name__), 'columns': str(columns)}
-        statements.append(sql.format(**params))
+            sql = 'CREATE TABLE {table_name} ( ' \
+                  'id INTEGER GENERATED ALWAYS AS IDENTITY (START WITH 1 INCREMENT BY 1) NOT NULL, ' \
+                  '{columns})'
+            params = {'table_name': str(model.__name__), 'columns': str(columns)}
+            statements.append(sql.format(**params))
 
         for k, v in collection_attrs.items():
             params['attr_name'] = k
@@ -396,3 +398,46 @@ class Py2SQL:
     def attrs(model):
         """ Returns dict of class attributes and their types"""
         return dict(i for i in vars(model).items() if i[0][0] != '_')
+
+
+class Model:
+
+    __orm = Py2SQL()
+    __db_credentials = None
+
+    def delete(self):
+        """ Delete object representation in database """
+        self.__orm.db_connect(self.__db_credentials)
+        try:
+            self.__orm.delete_object(self)
+        finally:
+            self.__orm.db_disconnect()
+
+    def save(self):
+        """ Save object representation in database """
+        self.__orm.db_connect(self.__db_credentials)
+        try:
+            self.__orm.save_object(self)
+        finally:
+            self.__orm.db_disconnect()
+
+    @classmethod
+    def save_class(cls, db_credentials):
+        """ Save class representation in database """
+        cls.__orm.db_connect(db_credentials)
+        try:
+            cls.__orm.save_class(cls)
+        finally:
+            cls.__orm.db_disconnect()
+
+    @classmethod
+    def delete_class(cls, db_credentials):
+        """ Delete object representation in database """
+        cls.__orm.db_connect(db_credentials)
+        try:
+            cls.__orm.delete_class(cls)
+        finally:
+            cls.__orm.db_disconnect()
+
+    def set_db_credentials(self, db_credentials):
+        self.__db_credentials = db_credentials
